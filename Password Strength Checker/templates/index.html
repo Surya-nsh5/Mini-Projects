@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Strength Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+        .result strong {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Password Strength Checker</h1>
+        <input type="password" id="password" placeholder="Enter your password" />
+        <button onclick="checkPassword()">Check Strength</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        async function checkPassword() {
+            const password = document.getElementById("password").value;
+            const resultDiv = document.getElementById("result");
+
+            if (!password) {
+                resultDiv.innerHTML = "<strong>Please enter a password.</strong>";
+                return;
+            }
+
+            const response = await fetch('/assess_password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ password })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <strong>Strength:</strong> ${data.strength}<br>
+                    <strong>Details:</strong><br>
+                    <ul>
+                        <li>${data.details.length}</li>
+                        <li>${data.details.uppercase}</li>
+                        <li>${data.details.lowercase}</li>
+                        <li>${data.details.digit}</li>
+                        <li>${data.details.special}</li>
+                        <li>${data.details.common_patterns}</li>
+                    </ul>
+                `;
+            } else {
+                const error = await response.json();
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.error}`;
+            }
+        }
+    </script>
+</body>
+</html>
